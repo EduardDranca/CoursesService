@@ -1,0 +1,209 @@
+openapi: '3.0.2'
+info:
+  title: Free Courses Service API
+  version: '1.0'
+servers:
+  - url: http://localhost:8080/v1
+
+paths:
+  /courses:
+    get:
+      operationId: 'listCourses'
+      parameters:
+        - in: query
+          name: category
+          schema:
+            $ref: '#/components/schemas/Category'
+          required: true
+          description: The category (e.g. Software Development) of the courses to get
+        - in: query
+          name: subcategory
+          schema:
+            $ref: '#/components/schemas/Category'
+          required: false
+          description: The subcategory (e.g. Python Programming) of the courses to get for a given category
+        - in: query
+          name: maxCourses
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 50
+          required: false
+          description: The maximum number of courses to be returned in a single page
+        - in: query
+          name: startId
+          schema:
+            $ref: '#/components/schemas/CourseId'
+          required: false
+          description: The exclusive start id of the page of courses to be returned
+        - in: query
+          name: difficulty
+          schema:
+            $ref: '#/components/schemas/CourseDifficulty'
+          required: false
+          description: The difficulty of the courses to be returned
+      responses:
+        '200':
+          description: The list of courses was returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseList'
+    post:
+      operationId: 'createCourse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseRequest'
+      responses:
+        '201':
+          description: The course was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidInputError'
+        '409':
+          description: The course already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAlreadyExistsError'
+  /courses/{courseId}:
+    get:
+      operationId: 'getCourseById'
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            $ref: '#/components/schemas/CourseId'
+          required: true
+          description: Unique id of the course to get
+      responses:  
+        '200':
+          description: Course was returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidInputError'
+        '404':
+          description: Course could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseNotFoundError'         
+components:
+  schemas:
+    Course:
+      title: Course
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/CourseId'
+        description:
+          type: string
+        uri:
+          type: string
+          format: uri
+        difficulty:
+          $ref: '#/components/schemas/CourseDifficulty'
+        category:
+          $ref: '#/components/schemas/Category'
+        subcategories:
+          $ref: '#/components/schemas/SubcategoryList'
+        source:
+          $ref: '#/components/schemas/CourseSource'
+    CourseList:
+      title: CourseList
+      type: array
+      items:
+        $ref: '#/components/schemas/Course'
+    CreateCourseRequest:
+      title: CreateCourseRequest
+      type: object
+      properties:
+        description:
+          type: string
+        uri:
+          type: string
+          format: uri
+        difficulty:
+          $ref: '#/components/schemas/CourseDifficulty'
+        category:
+          $ref: '#/components/schemas/Category'
+        subcategories:
+          $ref: '#/components/schemas/SubcategoryList'
+        source:
+          $ref: '#/components/schemas/CourseSource'
+      required:
+        - description
+        - uri
+        - category
+        - subcategory
+        - source
+    ListCoursesResponse:
+      title: ListCoursesResponse
+      type: object
+      properties:
+        courses:
+          $ref: '#/components/schemas/CourseList'
+    CourseDifficulty:
+      title: CourseDifficulty
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+    CourseSource:
+      title: CourseSource
+      type: string
+      enum: [ YOUTUBE, COURSERA, UDEMY ]
+    CourseId:
+      title: CourseId
+      type: string
+      format: uuid
+    Category:
+      type: string
+      pattern: '^([a-zA-Z]| )*$'
+      minLength: 1
+      maxLength: 50
+    Subcategory:
+      $ref: '#/components/schemas/Category'
+    SubcategoryList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Subcategory'
+      minItems: 1
+      maxItems: 5
+    CourseNotFoundError:
+      title: CourseNotFoundError
+      type: object
+      properties:
+        message:
+          type: string
+        courseId:
+          $ref: '#/components/schemas/CourseId'
+    CourseAlreadyExistsError:
+      title: CourseAlreadyExistsError
+      type: object
+      properties:
+        message:
+          type: string
+    InvalidInputError:
+      title: InvalidInputError
+      type: object
+      properties:
+        message:
+          type: string
+

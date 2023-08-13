@@ -1,0 +1,96 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.13'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'org.openapi.generator' version '6.6.0'
+	id 'application'
+	id 'org.jetbrains.kotlin.jvm' version '1.9.0'
+}
+
+group = 'com.freecourses'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '11'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// spring
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// openapi
+	implementation 'org.openapitools:jackson-databind-nullable:0.2.2'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.11'
+
+	// testing
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.jetbrains.kotlin:kotlin-test'
+
+	//aws
+	implementation platform('software.amazon.awssdk:bom:2.20.1')
+	implementation 'software.amazon.awssdk:dynamodb-enhanced'
+	implementation 'com.amazonaws:DynamoDBLocal:1.23.0'
+	runtimeOnly 'software.amazon.awssdk:sts'
+
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+tasks.named('openApiGenerate') {
+	inputSpec.set("$rootDir/src/resources/api.yml")
+	outputDir.set("$rootDir/build/generated")
+	globalProperties.set([
+		models: ''
+	])
+	modelPackage.set('com.freecourses.model')
+	generatorName.set('spring')
+}
+
+tasks.named('compileKotlin') {
+	kotlinOptions {
+		jvmTarget = '11'
+	}
+
+	dependsOn tasks.openApiGenerate
+}
+
+tasks.named('compileTestKotlin') {
+	kotlinOptions {
+		jvmTarget = '11'
+	}
+
+	dependsOn tasks.openApiGenerate
+	dependsOn tasks.copySQLite
+}
+
+tasks.register('copySQLite', Copy) {
+	from(configurations.runtimeClasspath) {
+		include "*.so"
+		include "*.dylib"
+		include "*.dll"
+	}
+	into "$rootDir/native-libs"
+}
+
+application {
+	mainClass = 'com.freecourses.FreeCoursesServiceApplication'
+	run {
+		environment "native.libs", "$rootDir/native-libs"
+	}
+}
+
+test {
+	environment "native.libs", "$rootDir/native-libs"
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+compileJava.dependsOn tasks.copySQLite
