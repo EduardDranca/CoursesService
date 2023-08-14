@@ -1,8 +1,8 @@
 package com.freecourses.controller
 
 import com.freecourses.model.CourseNotFoundError
-import com.freecourses.model.InvalidInputError
 import com.freecourses.model.exceptions.CourseNotFoundException
+import com.freecourses.model.InvalidInputError
 import org.springframework.beans.TypeMismatchException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

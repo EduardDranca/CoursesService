@@ -32,17 +32,17 @@ paths:
           required: false
           description: The maximum number of courses to be returned in a single page
         - in: query
-          name: startId
-          schema:
-            $ref: '#/components/schemas/CourseId'
-          required: false
-          description: The exclusive start id of the page of courses to be returned
-        - in: query
           name: difficulty
           schema:
             $ref: '#/components/schemas/CourseDifficulty'
           required: false
           description: The difficulty of the courses to be returned
+        - in: query
+          name: nextPageToken
+          schema:
+            $ref: '#/components/schemas/NextPageToken'
+          required: false
+          description: The token for the next page of courses to be returned (for the initial call this is null)
       responses:
         '200':
           description: The list of courses was returned successfully
@@ -153,14 +153,18 @@ components:
         - description
         - uri
         - category
-        - subcategory
+        - subcategories
         - source
     ListCoursesResponse:
       title: ListCoursesResponse
       type: object
       properties:
+        nextPageToken:
+          $ref: '#/components/schemas/NextPageToken'
         courses:
           $ref: '#/components/schemas/CourseList'
+      required:
+        - courses
     CourseDifficulty:
       title: CourseDifficulty
       type: string
@@ -186,6 +190,9 @@ components:
         $ref: '#/components/schemas/Subcategory'
       minItems: 1
       maxItems: 5
+    NextPageToken:
+      type: string
+      format: byte
     CourseNotFoundError:
       title: CourseNotFoundError
       type: object

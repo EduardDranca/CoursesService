@@ -51,6 +51,9 @@ tasks.named('openApiGenerate') {
 	globalProperties.set([
 		models: ''
 	])
+	configOptions.set([
+		sourceFolder: "main/java"
+	])
 	modelPackage.set('com.freecourses.model')
 	generatorName.set('spring')
 }
@@ -90,6 +93,14 @@ application {
 
 test {
 	environment "native.libs", "$rootDir/native-libs"
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir "$buildDir/generated/main/java"
+		}
+	}
 }
 
 compileJava.dependsOn tasks.openApiGenerate
