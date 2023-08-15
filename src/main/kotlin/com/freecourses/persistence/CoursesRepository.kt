@@ -3,6 +3,7 @@ package com.freecourses.persistence
 import com.freecourses.model.CourseDifficulty
 import com.freecourses.model.exceptions.CourseNotFoundException
 import com.freecourses.persistence.model.CourseDO
+import org.springframework.stereotype.Repository
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import software.amazon.awssdk.enhanced.dynamodb.Expression
@@ -13,6 +14,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhanced
 import java.util.*
 import java.util.stream.Collectors
 
+@Repository
 class CoursesRepository(private val coursesTable: DynamoDbTable<CourseDO>, private val dynamoDbClient: DynamoDbEnhancedClient) {
     fun createCourse(course: CourseDO): CourseDO {
         val writeCoursesRequest = TransactWriteItemsEnhancedRequest.builder()
