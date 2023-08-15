@@ -19,6 +19,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.Projection
 import software.amazon.awssdk.services.dynamodb.model.ProjectionType
+import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
 import java.net.URI
 
 @Configuration
@@ -67,20 +68,29 @@ open class ServiceConfig(
     open fun dynamoDBCoursesTable(amazonEnhancedDynamoDB: DynamoDbEnhancedClient): DynamoDbTable<CourseDO> {
         val dynamoDBCoursesTable = amazonEnhancedDynamoDB.table("Courses", TableSchema.fromBean(CourseDO::class.java))
         if (environment.matchesProfiles("test")) {
-            dynamoDBCoursesTable.deleteTable()
             createTestTable(dynamoDBCoursesTable)
         }
         return dynamoDBCoursesTable
     }
 
     private fun createTestTable(dynamoDBCoursesTable: DynamoDbTable<CourseDO>) {
-        dynamoDBCoursesTable.createTable(CreateTableEnhancedRequest.builder()
-            .globalSecondaryIndices(EnhancedGlobalSecondaryIndex.builder()
-                .indexName(CourseDO.INDEX_NAME)
-                .projection(Projection.builder()
-                    .projectionType(ProjectionType.ALL)
-                    .build())
-                .build())
-            .build())
+        try {
+            dynamoDBCoursesTable.createTable(
+                CreateTableEnhancedRequest.builder()
+                    .globalSecondaryIndices(
+                        EnhancedGlobalSecondaryIndex.builder()
+                            .indexName(CourseDO.INDEX_NAME)
+                            .projection(
+                                Projection.builder()
+                                    .projectionType(ProjectionType.ALL)
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .build()
+            )
+        } catch (ex: ResourceNotFoundException) {
+            // intentionally ignore this exception for local testing
+        }
     }
 }
