@@ -34,7 +34,6 @@ dependencies {
 	//aws
 	implementation platform('software.amazon.awssdk:bom:2.20.1')
 	implementation 'software.amazon.awssdk:dynamodb-enhanced'
-	implementation 'com.amazonaws:DynamoDBLocal:1.23.0'
 	runtimeOnly 'software.amazon.awssdk:sts'
 
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
@@ -72,27 +71,10 @@ tasks.named('compileTestKotlin') {
 	}
 
 	dependsOn tasks.openApiGenerate
-	dependsOn tasks.copySQLite
-}
-
-tasks.register('copySQLite', Copy) {
-	from(configurations.runtimeClasspath) {
-		include "*.so"
-		include "*.dylib"
-		include "*.dll"
-	}
-	into "$rootDir/native-libs"
 }
 
 application {
 	mainClass = 'com.freecourses.FreeCoursesServiceApplication'
-	run {
-		environment "native.libs", "$rootDir/native-libs"
-	}
-}
-
-test {
-	environment "native.libs", "$rootDir/native-libs"
 }
 
 sourceSets {
@@ -104,4 +86,3 @@ sourceSets {
 }
 
 compileJava.dependsOn tasks.openApiGenerate
-compileJava.dependsOn tasks.copySQLite
