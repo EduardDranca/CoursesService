@@ -19,7 +19,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.Projection
 import software.amazon.awssdk.services.dynamodb.model.ProjectionType
-import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
+import software.amazon.awssdk.services.dynamodb.model.ResourceInUseException
 import java.net.URI
 
 @Configuration
@@ -89,7 +89,7 @@ open class ServiceConfig(
                     )
                     .build()
             )
-        } catch (ex: ResourceNotFoundException) {
+        } catch (ex: ResourceInUseException) {
             // intentionally ignore this exception for local testing
         }
     }
