@@ -1,14 +1,11 @@
 package com.freecourses
 
-import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
 @SpringBootApplication
-open class FreeCoursesServiceApplication {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            SpringApplication.run(FreeCoursesServiceApplication::class.java, *args)
-        }
-    }
+open class FreeCoursesServiceApplication {}
+
+fun main(args: Array<String>) {
+    runApplication<FreeCoursesServiceApplication>(*args)
 }

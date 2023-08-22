@@ -3,19 +3,23 @@ package com.freecourses.persistence
 import com.freecourses.model.CourseDifficulty
 import com.freecourses.model.exceptions.CourseNotFoundException
 import com.freecourses.persistence.model.CourseDO
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import software.amazon.awssdk.enhanced.dynamodb.Expression
-import software.amazon.awssdk.enhanced.dynamodb.Key
+import software.amazon.awssdk.enhanced.dynamodb.model.Page
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import java.util.*
-import java.util.stream.Collectors
 
 @Repository
-class CoursesRepository(private val coursesTable: DynamoDbTable<CourseDO>, private val dynamoDbClient: DynamoDbEnhancedClient) {
+class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<CourseDO>,
+                        @Autowired private val dynamoDbClient: DynamoDbEnhancedClient) {
+    private val categorySubcategoryIndex: DynamoDbIndex<CourseDO> = coursesTable.index(CourseDO.INDEX_NAME)
     fun createCourse(course: CourseDO): CourseDO {
         val writeCoursesRequest = TransactWriteItemsEnhancedRequest.builder()
             .addPutItem(coursesTable, course);
@@ -36,44 +40,50 @@ class CoursesRepository(private val coursesTable: DynamoDbTable<CourseDO>, priva
         )
     }
 
-    fun getCourses(category: String): List<CourseDO> {
-        val courseCategoryIndex = coursesTable.index(CourseDO.INDEX_NAME)
-        val queryConditional = QueryConditional.keyEqualTo(Key.builder().partitionValue(category).build())
+    fun getCourses(category: String, pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?): Page<CourseDO> {
+        val queryConditional = getQueryConditional(category)
         val query = QueryEnhancedRequest.builder()
             .queryConditional(queryConditional)
-            .limit(2)
+            .limit(pageSize)
+            .exclusiveStartKey(lastEvaluatedKey)
             .build()
-        return courseCategoryIndex.query(query)
-            .stream()
-            .flatMap { it.items().stream() }
-            .collect(Collectors.toList())
+        return executeQuery(query)
     }
 
-    fun getCourses(category: String, subcategory: String): List<CourseDO> {
-        val courseCategoryIndex = coursesTable.index(CourseDO.INDEX_NAME)
-        val queryConditional = QueryConditional.keyEqualTo { b -> b.partitionValue("$category#$subcategory") }
+    fun getCourses(category: String, subcategory: String, pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?): Page<CourseDO> {
+        val queryConditional = getQueryConditional("$category#$subcategory")
         val query = QueryEnhancedRequest.builder()
             .queryConditional(queryConditional)
+            .limit(pageSize)
+            .exclusiveStartKey(lastEvaluatedKey)
             .build()
-        return courseCategoryIndex.query(query)
-            .stream()
-            .flatMap { it.items().stream() }
-            .collect(Collectors.toList())
+        return executeQuery(query)
     }
 
-    fun getCourses(category: String, subcategory: String, difficulty: CourseDifficulty): List<CourseDO> {
-        val courseCategoryIndex = coursesTable.index(CourseDO.INDEX_NAME)
-        val queryConditional = QueryConditional.keyEqualTo { b -> b.sortValue("$category#$subcategory") }
+    fun getCourses(category: String, subcategory: String, difficulty: CourseDifficulty, pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?): Page<CourseDO> {
+        val queryConditional = getQueryConditional("$category#$subcategory")
         val beginsWithFilterExpression = Expression.builder()
             .expression("begins_with(csGsiSk, $difficulty#)")
             .build()
         val query = QueryEnhancedRequest.builder()
             .queryConditional(queryConditional)
+            .limit(pageSize)
             .filterExpression(beginsWithFilterExpression)
+            .exclusiveStartKey(lastEvaluatedKey)
             .build()
-        return courseCategoryIndex.query(query)
-            .stream()
-            .flatMap { it.items().stream() }
-            .collect(Collectors.toList())
+        return executeQuery(query)
+    }
+
+    private fun executeQuery(query: QueryEnhancedRequest): Page<CourseDO> {
+        return try {
+            categorySubcategoryIndex.query(query)
+                .first()
+        } catch (e: NoSuchElementException) {
+            Page.create(Collections.emptyList())
+        }
+    }
+
+    private fun getQueryConditional(partitionValue: String): QueryConditional {
+        return QueryConditional.keyEqualTo {key -> key.partitionValue(partitionValue)}
     }
 }

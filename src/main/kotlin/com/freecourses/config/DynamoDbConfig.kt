@@ -6,10 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema
@@ -23,15 +20,9 @@ import software.amazon.awssdk.services.dynamodb.model.ResourceInUseException
 import java.net.URI
 
 @Configuration
-open class ServiceConfig(
+open class DynamoDbConfig {
     @Autowired
-    val environment: Environment
-) {
-    @Bean
-    @Profile("!test")
-    open fun awsCredentialsProvider(): AwsCredentialsProvider {
-        return DefaultCredentialsProvider.create()
-    }
+    lateinit var environment: Environment
 
     @Bean
     @Profile("!test")
@@ -39,12 +30,6 @@ open class ServiceConfig(
         return DynamoDbClient.builder()
             .credentialsProvider(credentialsProvider)
             .build()
-    }
-
-    @Bean
-    @Profile("test")
-    open fun awsCredentialsProviderTest(): AwsCredentialsProvider {
-        return StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"));
     }
 
     @Bean

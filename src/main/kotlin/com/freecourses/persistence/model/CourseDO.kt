@@ -32,23 +32,5 @@ data class CourseDO(
 
     companion object {
         const val INDEX_NAME = "category-subcategory-index"
-//        class UUIDToStringConverter: AttributeConverter<UUID> {
-//
-//            override fun transformFrom(input: UUID?): AttributeValue {
-//                return AttributeValue.builder().s(input.toString()).build()
-//            }
-//
-//            override fun transformTo(input: AttributeValue?): UUID {
-//                return UUID.fromString(input?.s())
-//            }
-//
-//            override fun type(): EnhancedType<UUID> {
-//                return EnhancedType.of(UUID::class.java)
-//            }
-//
-//            override fun attributeValueType(): AttributeValueType {
-//                return AttributeValueType.S
-//            }
-//        }
     }
 }

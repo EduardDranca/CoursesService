@@ -192,7 +192,6 @@ components:
       maxItems: 5
     NextPageToken:
       type: string
-      format: byte
     CourseNotFoundError:
       title: CourseNotFoundError
       type: object

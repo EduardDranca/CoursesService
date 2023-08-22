@@ -25,4 +25,12 @@ class CourseMapperTest {
         Assertions.assertEquals(ccr.description, courseDO.description)
         Assertions.assertEquals(ccr.subcategories, courseDO.subcategories)
     }
+
+//    @Test
+//    fun Given_LastEvaluatedKey_When_MappingToNextPageToken_Then_ExpectCorrectMapping() {
+//        val attrValMap: Map<String, AttributeValue>  = mapOf(
+//            Pair("abc", AttributeValue.fromS("xyz")),
+//            Pair("xyz", AttributeValue.fromN("123")))
+//        val byteArray = CourseMapper.INSTANCE.toNextPageToken(attrValMap)
+//    }
 }
