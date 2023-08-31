@@ -26,9 +26,6 @@ data class CourseDO(
 
     @get:DynamoDbSecondarySortKey(indexNames = [INDEX_NAME])
     var csGsiSk: String? = null
-        set(value) {
-            field = value
-        }
 
     companion object {
         const val INDEX_NAME = "category-subcategory-index"

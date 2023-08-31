@@ -34,7 +34,7 @@ paths:
         - in: query
           name: difficulty
           schema:
-            $ref: '#/components/schemas/CourseDifficulty'
+            $ref: '#/components/schemas/CourseDifficultyString'
           required: false
           description: The difficulty of the courses to be returned
         - in: query
@@ -120,13 +120,21 @@ components:
           type: string
           format: uri
         difficulty:
-          $ref: '#/components/schemas/CourseDifficulty'
+          $ref: '#/components/schemas/CourseDifficultyString'
         category:
           $ref: '#/components/schemas/Category'
         subcategories:
           $ref: '#/components/schemas/SubcategoryList'
         source:
-          $ref: '#/components/schemas/CourseSource'
+          $ref: '#/components/schemas/CourseSourceString'
+      required:
+        - id
+        - description
+        - uri
+        - difficulty
+        - category
+        - subcategories
+        - source
     CourseList:
       title: CourseList
       type: array
@@ -142,16 +150,17 @@ components:
           type: string
           format: uri
         difficulty:
-          $ref: '#/components/schemas/CourseDifficulty'
+          $ref: '#/components/schemas/CourseDifficultyString'
         category:
           $ref: '#/components/schemas/Category'
         subcategories:
           $ref: '#/components/schemas/SubcategoryList'
         source:
-          $ref: '#/components/schemas/CourseSource'
+          $ref: '#/components/schemas/CourseSourceString'
       required:
         - description
         - uri
+        - difficulty
         - category
         - subcategories
         - source
@@ -173,6 +182,16 @@ components:
       title: CourseSource
       type: string
       enum: [ YOUTUBE, COURSERA, UDEMY ]
+    CourseDifficultyString:
+      type: string
+      pattern: '^[A-Z]*$'
+      minLength: 8
+      maxLength: 12
+    CourseSourceString:
+      type: string
+      pattern: '^[A-Z]*$'
+      minLength: 5
+      maxLength: 8
     CourseId:
       title: CourseId
       type: string
