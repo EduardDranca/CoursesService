@@ -4,6 +4,8 @@ import com.freecourses.model.Course
 import com.freecourses.model.CourseDifficulty
 import com.freecourses.model.CreateCourseRequest
 import com.freecourses.model.ListCoursesResponse
+import com.freecourses.model.exceptions.CourseNotFoundException
+import com.freecourses.model.exceptions.CourseServiceException
 import com.freecourses.model.mappers.CourseMapper
 import com.freecourses.persistence.CoursesRepository
 import com.freecourses.persistence.utils.PageTokenConverter
@@ -14,9 +16,8 @@ import java.util.*
 
 @Service
 class CoursesServiceImpl(@Autowired private val coursesRepository: CoursesRepository,
-                         @Autowired private val pageTokenConverter: PageTokenConverter): CoursesService {
-    val courseMapper = CourseMapper.INSTANCE
-
+                         @Autowired private val pageTokenConverter: PageTokenConverter,
+                         @Autowired private val courseMapper: CourseMapper): CoursesService {
     override fun getCourses(
         category: String,
         subcategory: String?,
@@ -24,21 +25,37 @@ class CoursesServiceImpl(@Autowired private val coursesRepository: CoursesReposi
         pageSize: Int,
         nextPageToken: ByteArray?
     ): ListCoursesResponse {
-        val lastPageKey: Map<String, AttributeValue>? = pageTokenConverter.deserialize(nextPageToken)
-        if (subcategory == null) {
-            return courseMapper.toListCoursesResponse(coursesRepository.getCourses(category, pageSize, lastPageKey))
+        try {
+            val lastPageKey: Map<String, AttributeValue>? = pageTokenConverter.deserialize(nextPageToken)
+            if (subcategory == null) {
+                return courseMapper.toListCoursesResponse(coursesRepository.getCourses(category, pageSize, lastPageKey))
+            }
+            if (difficulty == null) {
+                return courseMapper.toListCoursesResponse(coursesRepository.getCourses(category, subcategory, pageSize, lastPageKey))
+            }
+            return courseMapper.toListCoursesResponse(coursesRepository.getCourses(category, subcategory, difficulty, pageSize, lastPageKey))
+        } catch (e: Exception) {
+            throw CourseServiceException("Error while getting courses.", e)
         }
-        if (difficulty == null) {
-            return courseMapper.toListCoursesResponse(coursesRepository.getCourses(category, subcategory, pageSize, lastPageKey))
-        }
-        return courseMapper.toListCoursesResponse(coursesRepository.getCourses(category, subcategory, difficulty, pageSize, lastPageKey))
     }
 
     override fun getCourse(courseId: UUID): Course {
-        return courseMapper.toCourse(coursesRepository.getCourse(courseId))
+        var course: Course? = null
+        try {
+            course = courseMapper.toCourse(coursesRepository.getCourse(courseId))
+        } catch (e: Exception) {
+            throw CourseServiceException("Error while getting course with id: <$courseId>.", e)
+        }
+        return course ?: throw CourseNotFoundException(courseId, "The course with id: <$courseId> could not be found.")
     }
 
     override fun createCourse(course: CreateCourseRequest): Course {
-        return courseMapper.toCourse(coursesRepository.createCourse(courseMapper.toCourseDO(course)))
+        //TODO: check if course already exists, insert an entry in the database for the course url in the same transaction as the course creation
+        // if that throws an exception from ddb, throw a CourseAlreadyExistsException
+        try {
+            return courseMapper.toCourse(coursesRepository.createCourse(courseMapper.toCourseDO(course)))
+        } catch (e: Exception) {
+            throw CourseServiceException("Error while creating course.", e)
+        }
     }
 }

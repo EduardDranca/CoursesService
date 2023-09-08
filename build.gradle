@@ -30,7 +30,7 @@ dependencies {
 	// testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.jetbrains.kotlin:kotlin-test'
-	testImplementation 'org.mockito:mockito-core'
+	testImplementation "io.mockk:mockk:1.13.5"
 
 	//aws
 	implementation platform('software.amazon.awssdk:bom:2.20.1')

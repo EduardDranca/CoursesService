@@ -12,6 +12,4 @@ class StringAttributeValueDeserializer: StdDeserializer<AttributeValue> {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): AttributeValue {
         return AttributeValue.fromS(p.codec.readValue(p, String::class.java))
     }
-
-
 }

@@ -1,7 +1,6 @@
 package com.freecourses.persistence
 
 import com.freecourses.model.CourseDifficulty
-import com.freecourses.model.exceptions.CourseNotFoundException
 import com.freecourses.persistence.model.CourseDO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
@@ -17,54 +16,43 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import java.util.*
 
 @Repository
-class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<CourseDO>,
-                        @Autowired private val dynamoDbClient: DynamoDbEnhancedClient) {
+open class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<CourseDO>,
+                             @Autowired private val dynamoDbClient: DynamoDbEnhancedClient) {
     private val categorySubcategoryIndex: DynamoDbIndex<CourseDO> = coursesTable.index(CourseDO.INDEX_NAME)
+    //TODO: add a gsi on the course URL to check if it already exists
     fun createCourse(course: CourseDO): CourseDO {
         val writeCoursesRequest = TransactWriteItemsEnhancedRequest.builder()
-            .addPutItem(coursesTable, course);
-        course.subcategories.forEach { subcategory: String ->
+            .addPutItem(coursesTable, course)
+        course.subcategories.forEach {
             val newCourse: CourseDO = course.copy(
-                sortKey = "${course.category}#${subcategory}"
+                sortKey = "${course.category}#${it}"
             )
             writeCoursesRequest.addPutItem(coursesTable, newCourse)
         }
         dynamoDbClient.transactWriteItems(writeCoursesRequest.build())
-        return course;
+        return course
     }
 
-    fun getCourse(uuid: UUID): CourseDO {
-        return coursesTable.getItem(CourseDO(id = uuid)) ?: throw CourseNotFoundException(
-            uuid,
-            String.format("The course with id: <%s> could not be found.", uuid)
-        )
+    fun getCourse(uuid: UUID): CourseDO? {
+        return coursesTable.getItem(CourseDO(id = uuid))
     }
 
     fun getCourses(category: String, pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?): Page<CourseDO> {
-        val queryConditional = getQueryConditional(category)
-        val query = QueryEnhancedRequest.builder()
-            .queryConditional(queryConditional)
-            .limit(pageSize)
-            .exclusiveStartKey(lastEvaluatedKey)
-            .build()
-        return executeQuery(query)
+        return getCourses(category, null, null, pageSize, lastEvaluatedKey)
     }
 
     fun getCourses(category: String, subcategory: String, pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?): Page<CourseDO> {
-        val queryConditional = getQueryConditional("$category#$subcategory")
-        val query = QueryEnhancedRequest.builder()
-            .queryConditional(queryConditional)
-            .limit(pageSize)
-            .exclusiveStartKey(lastEvaluatedKey)
-            .build()
-        return executeQuery(query)
+        return getCourses(category, subcategory, null, pageSize, lastEvaluatedKey)
     }
 
-    fun getCourses(category: String, subcategory: String, difficulty: CourseDifficulty, pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?): Page<CourseDO> {
-        val queryConditional = getQueryConditional("$category#$subcategory")
-        val beginsWithFilterExpression = Expression.builder()
-            .expression("begins_with(csGsiSk, $difficulty#)")
+    fun getCourses(category: String, subcategory: String?, difficulty: CourseDifficulty?,
+                   pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?):  Page<CourseDO> {
+        val queryConditional = getQueryConditional(category, subcategory)
+        val beginsWithFilterExpression = difficulty?.let {
+            Expression.builder()
+            .expression("begins_with(csGsiSk, $it#)")
             .build()
+        }
         val query = QueryEnhancedRequest.builder()
             .queryConditional(queryConditional)
             .limit(pageSize)
@@ -83,7 +71,8 @@ class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<Cours
         }
     }
 
-    private fun getQueryConditional(partitionValue: String): QueryConditional {
-        return QueryConditional.keyEqualTo {key -> key.partitionValue(partitionValue)}
+    private fun getQueryConditional(category: String, subcategory: String?): QueryConditional {
+        val partitionKeySuffix: String = if (subcategory == null) "" else "#$subcategory"
+        return QueryConditional.keyEqualTo { it.partitionValue("$category${partitionKeySuffix}") }
     }
 }

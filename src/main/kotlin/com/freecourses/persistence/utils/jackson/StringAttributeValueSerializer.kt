@@ -14,7 +14,7 @@ class StringAttributeValueSerializer: StdSerializer<AttributeValue> {
         }
 
         if (value.type() != AttributeValue.Type.S) {
-            throw RuntimeException("StringAttributeValueSerializer can only serialize AttributeValues of String type")
+            throw RuntimeException("StringAttributeValueSerializer can only serialize AttributeValues of String type.")
         }
 
         return gen.writeString(value.s())

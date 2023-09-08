@@ -4,7 +4,6 @@ import com.freecourses.model.Course
 import com.freecourses.model.CourseDifficulty
 import com.freecourses.model.CreateCourseRequest
 import com.freecourses.model.ListCoursesResponse
-import com.freecourses.model.mappers.CourseMapper
 import com.freecourses.service.CoursesService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -17,8 +16,6 @@ import java.util.*
 @RequestMapping("/v1/courses")
 @Validated
 class CoursesController(@Autowired private val coursesService: CoursesService) {
-    private val courseMapper = CourseMapper.INSTANCE
-
     @CrossOrigin
     @GetMapping(path = ["/{courseId}"], produces = ["application/json"])
     fun getCourse(@PathVariable courseId: UUID): ResponseEntity<Course> {
@@ -37,7 +34,7 @@ class CoursesController(@Autowired private val coursesService: CoursesService) {
         @RequestParam(required = false) nextPageToken: String?
     ): ResponseEntity<ListCoursesResponse> {
         val pageSize: Int = maxCourses ?: 50
-        val nextPageTokenBytes = nextPageToken?.let { it -> Base64.getDecoder().decode(URLDecoder.decode(it, Charsets.UTF_8)) }
+        val nextPageTokenBytes = nextPageToken?.let { Base64.getDecoder().decode(URLDecoder.decode(it, Charsets.UTF_8)) }
         return ResponseEntity.ok(coursesService.getCourses(category, subcategory, difficulty, pageSize, nextPageTokenBytes))
     }
 
