@@ -2,6 +2,7 @@ package com.freecourses.config
 
 import com.freecourses.persistence.model.CourseDO
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -24,6 +25,9 @@ open class DynamoDbConfig {
     @Autowired
     lateinit var environment: Environment
 
+    @Value("\${dynamodb.local.endpoint}")
+    lateinit var dynamoDbLocalEndpoint: String
+
     @Bean
     @Profile("!test")
     open fun amazonDynamoDB(credentialsProvider: AwsCredentialsProvider): DynamoDbClient {
@@ -38,7 +42,7 @@ open class DynamoDbConfig {
         return DynamoDbClient.builder()
             .region(Region.EU_CENTRAL_1)
             .credentialsProvider(credentialsProvider)
-            .endpointOverride(URI.create("http://localhost:8000"))
+            .endpointOverride(URI.create(dynamoDbLocalEndpoint))
             .build()
     }
 

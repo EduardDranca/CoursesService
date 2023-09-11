@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class CoursesApplicationExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(CourseNotFoundException::class)
-    fun handleCourseNotFoundException(e: CourseNotFoundError): ResponseEntity<CourseNotFoundError> {
+    fun handleCourseNotFoundException(e: CourseNotFoundException): ResponseEntity<CourseNotFoundError> {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(CourseNotFoundError()
                 .courseId(e.courseId)

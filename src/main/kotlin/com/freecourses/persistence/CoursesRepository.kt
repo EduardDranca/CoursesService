@@ -25,7 +25,7 @@ open class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<
             .addPutItem(coursesTable, course)
         course.subcategories.forEach {
             val newCourse: CourseDO = course.copy(
-                sortKey = "${course.category}#${it}"
+                partitionKey = "${course.category}#${it}"
             )
             writeCoursesRequest.addPutItem(coursesTable, newCourse)
         }

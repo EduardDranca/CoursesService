@@ -31,7 +31,6 @@ class CoursesServiceImplTest {
     private val createCourseRequest = CreateCourseRequest()
     private val lastPageKey = mapOf(Pair("abc", AttributeValue.fromS("abc")))
     private val listCoursesResponse = ListCoursesResponse(listOf(course))
-
     @BeforeEach
     fun setUp() {
         every { coursesMapper.toCourse(any<CourseDO>()) } returns course
@@ -44,12 +43,13 @@ class CoursesServiceImplTest {
     @Test
     fun Given_NullCourse_When_GetCourseById_Then_ThrowCourseNotFoundException() {
         val courseId = UUID.randomUUID()
-        val courseNotFoundException = CourseNotFoundException(courseId, "The course with id: <$courseId> could not be found.")
         every { coursesRepository.getCourse(any<UUID>()) } returns null
+        every { coursesMapper.toCourse(any<CourseDO>()) } returns null
         val thrown = Assertions.assertThrows(CourseNotFoundException::class.java) {
             coursesService.getCourse(courseId)
         }
-        Assertions.assertEquals(courseNotFoundException, thrown)
+        Assertions.assertEquals(courseId, thrown.courseId)
+        Assertions.assertEquals("The course with id: <$courseId> could not be found.", thrown.message)
         verify { coursesRepository.getCourse(eq(courseId)) }
         confirmVerified(coursesRepository)
     }
@@ -62,7 +62,7 @@ class CoursesServiceImplTest {
         val thrown = Assertions.assertThrows(CourseServiceException::class.java) {
             coursesService.getCourse(courseId)
         }
-        Assertions.assertEquals("Error while getting course with id <$courseId>.", thrown.message)
+        Assertions.assertEquals("Error while getting course with id: <$courseId>.", thrown.message)
         Assertions.assertSame(repositoryException, thrown.cause)
         verify { coursesRepository.getCourse(eq(courseId)) }
         confirmVerified(coursesRepository)

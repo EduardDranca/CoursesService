@@ -1,4 +1,5 @@
 
+import com.freecourses.model.CourseDifficulty
 import com.freecourses.persistence.CoursesRepository
 import com.freecourses.persistence.model.CourseDO
 import io.mockk.*
@@ -18,11 +19,7 @@ class CoursesRepositoryTest {
         private val coursesTable = mockk<DynamoDbTable<CourseDO>>()
         private val dynamoDbClient = mockk<DynamoDbEnhancedClient>()
         private val coursesTableIndex = mockk<DynamoDbIndex<CourseDO>>()
-        private val emptyIterable = object : SdkIterable<Page<CourseDO>> {
-            override fun iterator(): MutableIterator<Page<CourseDO>> {
-                return Collections.emptyIterator()
-            }
-        }
+        private val emptyIterable = SdkIterable<Page<CourseDO>> { Collections.emptyIterator() }
         private var coursesRepository: CoursesRepository
 
         init {
@@ -60,12 +57,12 @@ class CoursesRepositoryTest {
             .addPutItem(coursesTable, course)
             .addPutItem(
                 coursesTable, course.copy(
-                    sortKey = "${course.category}#sub1"
+                    partitionKey = "${course.category}#sub1"
                 )
             )
             .addPutItem(
                 coursesTable, course.copy(
-                    sortKey = "${course.category}#sub2"
+                    partitionKey = "${course.category}#sub2"
                 )
             )
             .build()
@@ -100,11 +97,87 @@ class CoursesRepositoryTest {
         every { coursesTableIndex.query(any() as QueryEnhancedRequest) } returns emptyIterable
         val resultPage = coursesRepository.getCourses("category", 10, mapOf())
         Assertions.assertEquals(0, resultPage.items().size)
-        verify { coursesTableIndex.query(QueryEnhancedRequest.builder()
+        verify { coursesTableIndex.query(getMockQuery("category")) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    @Test
+    fun Given_Courses_When_GetCoursesByCategory_Then_ReturnPage() {
+        val courses = listOf(CourseDO(), CourseDO())
+        val coursesPage = Page.create(courses)
+        every { coursesTableIndex.query(any() as QueryEnhancedRequest) } returns SdkIterable { mutableListOf(coursesPage).iterator() }
+        val resultPage = coursesRepository.getCourses("category", 10, mapOf())
+        Assertions.assertEquals(courses, resultPage.items())
+        verify { coursesTableIndex.query(getMockQuery("category")) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    @Test
+    fun Given_NoCourses_When_GetCoursesByCategoryAndSubcategory_Then_ReturnEmptyPage() {
+        every { coursesTableIndex.query(any() as QueryEnhancedRequest) } returns emptyIterable
+        val resultPage = coursesRepository.getCourses("category", "subcategory", 10, mapOf())
+        Assertions.assertEquals(0, resultPage.items().size)
+        verify { coursesTableIndex.query(getMockQuery("category#subcategory")) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    @Test
+    fun Given_Courses_When_GetCoursesByCategoryAndSubcategory_Then_ReturnPage() {
+        val courses = listOf(CourseDO(), CourseDO())
+        val coursesPage = Page.create(courses)
+        every { coursesTableIndex.query(any() as QueryEnhancedRequest) } returns SdkIterable { mutableListOf(coursesPage).iterator() }
+        val resultPage = coursesRepository.getCourses("category", "subcategory", 10, mapOf())
+        Assertions.assertEquals(courses, resultPage.items())
+        verify { coursesTableIndex.query(getMockQuery("category#subcategory")) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    @Test
+    fun Given_NoCourses_When_GetCoursesByCategoryAndSubcategoryAndDifficulty_Then_ReturnEmptyPage() {
+        every { coursesTableIndex.query(any() as QueryEnhancedRequest) } returns emptyIterable
+        val resultPage = coursesRepository.getCourses("category", "subcategory", CourseDifficulty.BEGINNER, 10, mapOf())
+        Assertions.assertEquals(0, resultPage.items().size)
+        verify { coursesTableIndex.query(getMockQuery("category#subcategory", CourseDifficulty.BEGINNER)) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    @Test
+    fun Given_Courses_When_GetCoursesByCategoryAndSubcategoryAndDifficulty_Then_ReturnPage() {
+        val courses = listOf(CourseDO(), CourseDO())
+        val coursesPage = Page.create(courses)
+        every { coursesTableIndex.query(any() as QueryEnhancedRequest) } returns SdkIterable { mutableListOf(coursesPage).iterator() }
+        val resultPage = coursesRepository.getCourses("category", "subcategory", CourseDifficulty.BEGINNER, 10, mapOf())
+        Assertions.assertEquals(courses, resultPage.items())
+        verify { coursesTableIndex.query(getMockQuery("category#subcategory", CourseDifficulty.BEGINNER)) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    @Test
+    fun Given_DDBException_When_GetCourses_Then_ThrowException() {
+        val exception = Exception("exception")
+        every { coursesTableIndex.query(any() as QueryEnhancedRequest) } throws exception
+        val thrown = Assertions.assertThrows(Exception::class.java) {
+            coursesRepository.getCourses("category", "subcategory", CourseDifficulty.BEGINNER, 10, mapOf())
+        }
+        Assertions.assertSame(exception, thrown)
+        verify { coursesTableIndex.query(getMockQuery("category#subcategory", CourseDifficulty.BEGINNER)) }
+        confirmVerified(coursesTableIndex)
+    }
+
+    private fun getMockQuery(keyEqual: String): QueryEnhancedRequest {
+        return getMockQuery(keyEqual, null)
+    }
+
+    private fun getMockQuery(keyEqual: String, difficulty: CourseDifficulty?): QueryEnhancedRequest {
+        val beginsWithFilterExpression = difficulty?.let {
+            Expression.builder()
+                .expression("begins_with(csGsiSk, $it#)")
+                .build() }
+        return QueryEnhancedRequest.builder()
             .limit(10)
             .exclusiveStartKey(mapOf())
-            .queryConditional(QueryConditional.keyEqualTo { it.partitionValue("category") })
-            .build())}
-        confirmVerified(coursesTableIndex)
+            .queryConditional(QueryConditional.keyEqualTo { it.partitionValue(keyEqual) })
+            .filterExpression(beginsWithFilterExpression)
+            .build()
     }
 }
