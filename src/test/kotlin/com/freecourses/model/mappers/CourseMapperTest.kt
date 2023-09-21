@@ -37,7 +37,7 @@ class CourseMapperTest {
         assertEquals(COURSE_DO.source?.value, course.source)
         assertEquals(COURSE_DO.category, course.category)
         assertEquals(COURSE_DO.uri, course.uri)
-        assertEquals(COURSE_DO.difficulty?.value, course.difficulty)
+        assertEquals(COURSE_DO.difficulty, course.difficulty)
         assertEquals(COURSE_DO.description, course.description)
         assertEquals(COURSE_DO.subcategories, course.subcategories)
         assertEquals(COURSE_DO.id, course.id)
@@ -54,7 +54,7 @@ class CourseMapperTest {
         val ccr = CreateCourseRequest(
             "description",
             URI.create("https://www.google.com"),
-            CourseDifficulty.BEGINNER.value,
+            CourseDifficulty.BEGINNER,
             "Programming",
             listOf("Python", "ML"),
             CourseSource.COURSERA.value)
@@ -62,7 +62,7 @@ class CourseMapperTest {
         assertEquals(ccr.source, courseDO.source?.value)
         assertEquals(ccr.category, courseDO.category)
         assertEquals(ccr.uri, courseDO.uri)
-        assertEquals(ccr.difficulty, courseDO.difficulty?.value)
+        assertEquals(ccr.difficulty, courseDO.difficulty)
         assertEquals(ccr.description, courseDO.description)
         assertEquals(ccr.subcategories, courseDO.subcategories)
         
@@ -85,7 +85,7 @@ class CourseMapperTest {
         assertEquals(COURSE_DO.source?.value, course.source)
         assertEquals(COURSE_DO.category, course.category)
         assertEquals(COURSE_DO.uri, course.uri)
-        assertEquals(COURSE_DO.difficulty?.value, course.difficulty)
+        assertEquals(COURSE_DO.difficulty, course.difficulty)
         assertEquals(COURSE_DO.description, course.description)
         assertEquals(COURSE_DO.subcategories, course.subcategories)
     }

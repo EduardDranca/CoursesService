@@ -4,6 +4,8 @@ import com.freecourses.BaseIntegrationTest
 import com.freecourses.persistence.model.CourseDO
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
+import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -11,13 +13,23 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import java.util.*
 
 
-class CoursesControllerImplTest: BaseIntegrationTest() {
+class CoursesControllerTest: BaseIntegrationTest() {
     @Autowired
     lateinit var ddbTable: DynamoDbTable<CourseDO>
 
     @BeforeEach
     fun setUp() {
         clearItems()
+    }
+
+    @Test
+    fun Given_InvalidUUID_When_GetCourse_Then_ReturnBadRequest() {
+        val result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses/{id}", "invalid"))
+            .andExpect(status().isBadRequest)
+            .andReturn()
+            .response
+            .contentAsString
+        JSONAssert.assertEquals("{\"message\": \"Invalid UUID string: invalid\"}", result, JSONCompareMode.LENIENT)
     }
 
     @Test
@@ -31,15 +43,14 @@ class CoursesControllerImplTest: BaseIntegrationTest() {
     @Test
     fun Given_Course_When_GetCourse_Then_ReturnOk() {
         val courseId = UUID.randomUUID()
-        createCourse(courseId)
+        createCourse(CourseDO(id = courseId))
         val result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses/{id}", courseId))
             .andExpect(status().isOk)
             .andReturn()
         println(result.response.contentAsString)
     }
 
-    private fun createCourse(id: UUID) {
-        val course = CourseDO(id)
+    private fun createCourse(course: CourseDO) {
         ddbTable.putItem(course)
     }
 

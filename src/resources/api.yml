@@ -3,7 +3,7 @@ info:
   title: Free Courses Service API
   version: '1.0'
 servers:
-  - url: http://localhost:8080/v1
+  - url: http://localhost:8080/
 
 paths:
   /courses:
@@ -34,7 +34,7 @@ paths:
         - in: query
           name: difficulty
           schema:
-            $ref: '#/components/schemas/CourseDifficultyString'
+            $ref: '#/components/schemas/CourseDifficulty'
           required: false
           description: The difficulty of the courses to be returned
         - in: query
@@ -49,7 +49,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseList'
+                $ref: '#/components/schemas/ListCoursesResponse'
     post:
       operationId: 'createCourse'
       requestBody:
@@ -120,7 +120,7 @@ components:
           type: string
           format: uri
         difficulty:
-          $ref: '#/components/schemas/CourseDifficultyString'
+          $ref: '#/components/schemas/CourseDifficulty'
         category:
           $ref: '#/components/schemas/Category'
         subcategories:
@@ -150,7 +150,7 @@ components:
           type: string
           format: uri
         difficulty:
-          $ref: '#/components/schemas/CourseDifficultyString'
+          $ref: '#/components/schemas/CourseDifficulty'
         category:
           $ref: '#/components/schemas/Category'
         subcategories:
@@ -182,11 +182,6 @@ components:
       title: CourseSource
       type: string
       enum: [ YOUTUBE, COURSERA, UDEMY ]
-    CourseDifficultyString:
-      type: string
-      pattern: '^[A-Z]*$'
-      minLength: 8
-      maxLength: 12
     CourseSourceString:
       type: string
       pattern: '^[A-Z]*$'
