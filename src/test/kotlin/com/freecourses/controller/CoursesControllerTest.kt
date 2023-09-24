@@ -34,10 +34,13 @@ class CoursesControllerTest: BaseIntegrationTest() {
 
     @Test
     fun Given_NoCourse_When_GetCourse_Then_ReturnNotFoundError() {
-        val result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses/{id}", UUID.randomUUID()))
+        val courseId = UUID.randomUUID()
+        val result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses/{id}", courseId))
             .andExpect(status().isNotFound)
             .andReturn()
-        println(result.response.contentAsString)
+            .response
+            .contentAsString
+        JSONAssert.assertEquals("{\"message\": \"The course with id: <$courseId> could not be found.\", \"courseId\": \"$courseId\"}", result, JSONCompareMode.LENIENT)
     }
 
     @Test
@@ -47,7 +50,20 @@ class CoursesControllerTest: BaseIntegrationTest() {
         val result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses/{id}", courseId))
             .andExpect(status().isOk)
             .andReturn()
-        println(result.response.contentAsString)
+            .response
+            .contentAsString
+        JSONAssert.assertEquals("{\"id\":\"${courseId}\",\"description\":null,\"uri\":null,\"difficulty\":null,\"category\":null,\"subcategories\":[],\"source\":null}", result, JSONCompareMode.LENIENT)
+    }
+
+    @Test
+    fun Given_NoCourses_When_GetCourses_Then_ReturnEmptyListResponse() {
+        val result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses")
+            .param("category", "Programming"))
+            .andExpect(status().isOk)
+            .andReturn()
+            .response
+            .contentAsString
+        JSONAssert.assertEquals("{\"nextPageToken\":null,\"courses\":[]}", result, JSONCompareMode.LENIENT)
     }
 
     private fun createCourse(course: CourseDO) {

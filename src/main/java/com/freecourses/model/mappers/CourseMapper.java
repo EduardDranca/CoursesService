@@ -43,7 +43,7 @@ public abstract class CourseMapper {
     public abstract CourseDO toCourseDO(CreateCourseRequest createCourseRequest);
     public abstract List<Course> toCourseList(List<CourseDO> courseDOList);
     @AfterMapping
-    void setCourseGsiSK(@MappingTarget CourseDO courseDO) {
+    protected void setCourseGsiSK(@MappingTarget CourseDO courseDO) {
         courseDO.setCsGsiSk(String.format("%s#%s", courseDO.getDifficulty(), courseDO.getId()));
     }
 
@@ -52,6 +52,9 @@ public abstract class CourseMapper {
     public abstract ListCoursesResponse toListCoursesResponse(Page<CourseDO> coursesPage);
 
     protected static String serializeLastEvaluatedKey(Map<String, AttributeValue> lastEvaluatedKey) {
+        if (lastEvaluatedKey == null) {
+            return null;
+        }
         return URLEncoder.encode(Base64.getEncoder().encodeToString(PAGE_TOKEN_CONVERTER.serialize(lastEvaluatedKey)), StandardCharsets.UTF_8);
     }
 }
