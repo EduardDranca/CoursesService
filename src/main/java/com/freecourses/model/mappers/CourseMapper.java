@@ -27,7 +27,7 @@ import java.util.Map;
 @Mapper
 public abstract class CourseMapper {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    protected static final PageTokenConverter PAGE_TOKEN_CONVERTER = new PageTokenConverterImpl(OBJECT_MAPPER);
+    protected static final PageTokenConverter PAGE_TOKEN_CONVERTER;
     public static CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
 
     static {
@@ -35,6 +35,7 @@ public abstract class CourseMapper {
         simpleModule.addSerializer(AttributeValue.class, new StringAttributeValueSerializer());
         simpleModule.addDeserializer(AttributeValue.class, new StringAttributeValueDeserializer());
         OBJECT_MAPPER.registerModule(simpleModule);
+        PAGE_TOKEN_CONVERTER = new PageTokenConverterImpl(OBJECT_MAPPER);
     }
 
     public abstract Course toCourse(CourseDO courseDO);

@@ -22,12 +22,14 @@ data class CourseDO(
     var source: CourseSource? = null,
     var difficulty: CourseDifficulty? = null
 ) {
-    init {
-        this.partitionKey = Optional.ofNullable(partitionKey).orElse(category)
-    }
 
     @get:DynamoDbSecondarySortKey(indexNames = [INDEX_NAME])
     var csGsiSk: String? = null
+
+    init {
+        this.partitionKey = Optional.ofNullable(partitionKey).orElse(category)
+        this.csGsiSk = "${difficulty}#${id}"
+    }
 
     companion object {
         const val INDEX_NAME = "category-subcategory-index"

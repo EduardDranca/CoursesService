@@ -59,10 +59,10 @@ open class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<
             .filterExpression(beginsWithFilterExpression)
             .exclusiveStartKey(lastEvaluatedKey)
             .build()
-        return executeQuery(query)
+        return executeIndexQuery(query)
     }
 
-    private fun executeQuery(query: QueryEnhancedRequest): Page<CourseDO> {
+    private fun executeIndexQuery(query: QueryEnhancedRequest): Page<CourseDO> {
         return try {
             categorySubcategoryIndex.query(query)
                 .first()
