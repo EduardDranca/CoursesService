@@ -27,7 +27,7 @@ import java.util.Map;
 @Mapper
 public abstract class CourseMapper {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    protected static final PageTokenConverter PAGE_TOKEN_CONVERTER;
+    private static final PageTokenConverter PAGE_TOKEN_CONVERTER;
     public static CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
 
     static {

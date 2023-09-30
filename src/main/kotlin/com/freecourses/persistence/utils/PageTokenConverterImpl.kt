@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 
 @Component
-class PageTokenConverterImpl(@Autowired @Qualifier("attributeValueMapper") private var objectMapper: ObjectMapper) : PageTokenConverter {
+class PageTokenConverterImpl(@Autowired @Qualifier("attributeValueMapper") private val objectMapper: ObjectMapper) : PageTokenConverter {
     override fun serialize(lastEvaluatedKey: Map<String, AttributeValue>?): ByteArray? {
         lastEvaluatedKey ?: return null
         return objectMapper.writeValueAsBytes(lastEvaluatedKey)
