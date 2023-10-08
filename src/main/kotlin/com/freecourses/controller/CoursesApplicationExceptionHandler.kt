@@ -16,19 +16,24 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class CoursesApplicationExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(CourseNotFoundException::class)
-    fun handleCourseNotFoundException(e: CourseNotFoundError): ResponseEntity<CourseNotFoundError> {
-        return ResponseEntity.status(404).body(CourseNotFoundError().courseId(e.courseId).message(e.message))
+    fun handleCourseNotFoundException(e: CourseNotFoundException): ResponseEntity<CourseNotFoundError> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(CourseNotFoundError()
+                .courseId(e.courseId)
+                .message(e.message))
     }
 
     override fun handleTypeMismatch(
         ex: TypeMismatchException, headers: HttpHeaders, status: HttpStatus, request: WebRequest
     ): ResponseEntity<Any> {
-        return ResponseEntity.status(400).body(InvalidInputError().message(ex.cause!!.message))
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(InvalidInputError().message(ex.cause!!.message))
     }
 
     override fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException, headers: HttpHeaders, status: HttpStatus, request: WebRequest
     ): ResponseEntity<Any> {
-        return ResponseEntity.status(400).body(InvalidInputError().message(ex.cause!!.message))
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(InvalidInputError().message(ex.cause!!.message))
     }
 }

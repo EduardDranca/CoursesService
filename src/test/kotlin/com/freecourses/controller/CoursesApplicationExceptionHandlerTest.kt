@@ -1,0 +1,3 @@
+package com.freecourses.controller
+
+class CoursesApplicationExceptionHandlerTest
