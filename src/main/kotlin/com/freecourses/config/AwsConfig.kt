@@ -20,6 +20,6 @@ open class AwsConfig {
     @Bean
     @Profile("test")
     open fun awsCredentialsProviderTest(): AwsCredentialsProvider {
-        return StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"));
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
     }
 }

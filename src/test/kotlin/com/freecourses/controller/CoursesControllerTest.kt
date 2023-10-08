@@ -24,7 +24,9 @@ import kotlin.test.assertEquals
 class CoursesControllerTest: BaseIntegrationTest() {
     @Autowired
     lateinit var ddbTable: DynamoDbTable<CourseDO>
-    val OBJECT_MAPPER = ObjectMapper()
+    companion object {
+        private val OBJECT_MAPPER = ObjectMapper()
+    }
 
     @BeforeEach
     fun setUp() {
@@ -54,8 +56,9 @@ class CoursesControllerTest: BaseIntegrationTest() {
 
     @Test
     fun Given_NoCourses_When_GetCourses_Then_ReturnEmptyListResponse() {
-        val result = performListCoursesRequest(null)
-        JSONAssert.assertEquals("{\"nextPageToken\":null,\"courses\":[]}", result, JSONCompareMode.LENIENT)
+        val result = performListCoursesRequestWithPage(null)
+        assertCoursesListsEqual(emptyList(), result.courses)
+        assertNull(result.nextPageToken, "The nextPageToken should be null if there are no more pages")
     }
 
     @Test
@@ -64,15 +67,13 @@ class CoursesControllerTest: BaseIntegrationTest() {
             .mapToObj { CourseDO(id = UUID.randomUUID(), category = "Programming") }
             .toList()
         courses.forEach { createCourse(it) }
-        val result = performListCoursesRequest(null)
-        val response = OBJECT_MAPPER.readValue(result, ListCoursesResponse::class.java)
+        val result = performListCoursesRequestWithPage(null)
 
-        val secondResult = performListCoursesRequest(response.nextPageToken)
-        val secondResponse = OBJECT_MAPPER.readValue(secondResult, ListCoursesResponse::class.java)
+        val secondResult = performListCoursesRequestWithPage(result.nextPageToken)
 
-        assertCoursesListsEqual(courses, response.courses)
-        assertCoursesListsEqual(emptyList(), secondResponse.courses)
-        assertNull(secondResponse.nextPageToken, "The nextPageToken should be null if there are no more pages")
+        assertCoursesListsEqual(courses, result.courses)
+        assertCoursesListsEqual(emptyList(), secondResult.courses)
+        assertNull(secondResult.nextPageToken, "The nextPageToken should be null if there are no more pages")
     }
 
     @Test
@@ -81,19 +82,42 @@ class CoursesControllerTest: BaseIntegrationTest() {
             .mapToObj { CourseDO(id = UUID.randomUUID(), category = "Programming") }
             .toList()
         courses.forEach { createCourse(it) }
-        val result = performListCoursesRequest(null)
-        val response = OBJECT_MAPPER.readValue(result, ListCoursesResponse::class.java)
+        val result = performListCoursesRequestWithPage(null)
 
-        val secondResult = performListCoursesRequest(response.nextPageToken)
-        val secondResponse = OBJECT_MAPPER.readValue(secondResult, ListCoursesResponse::class.java)
+        val secondResult = performListCoursesRequestWithPage(result.nextPageToken)
 
-        val thirdResult = performListCoursesRequest(secondResponse.nextPageToken)
-        val thirdResponse = OBJECT_MAPPER.readValue(thirdResult, ListCoursesResponse::class.java)
+        val thirdResult = performListCoursesRequestWithPage(secondResult.nextPageToken)
 
-        val allReturnedCourses = response.courses + secondResponse.courses
-        assertCoursesListsEqual(emptyList(), thirdResponse.courses)
+        val allReturnedCourses = result.courses + secondResult.courses
+        assertCoursesListsEqual(emptyList(), thirdResult.courses)
         assertCoursesListsEqual(courses, allReturnedCourses)
-        assertNull(thirdResponse.nextPageToken, "The nextPageToken should be null if there are no more pages")
+        assertNull(thirdResult.nextPageToken, "The nextPageToken should be null if there are no more pages")
+    }
+
+    @Test
+    fun Given_DifferentCategoriesCourses_When_GetCoursesByCategory_Then_ReturnCoursesMatchingCategory() {
+        val programmingCourses = IntStream.range(0, 10)
+            .mapToObj { CourseDO(id = UUID.randomUUID(), category = "Programming") }
+            .toList()
+        val cookingCourses = IntStream.range(0, 10)
+            .mapToObj { CourseDO(id = UUID.randomUUID(), category = "Cooking") }
+            .toList()
+        programmingCourses.forEach { createCourse(it) }
+        cookingCourses.forEach { createCourse(it) }
+
+        val programmingResult = performListCoursesRequest("Programming")
+        val cookingResult = performListCoursesRequest("Cooking")
+        val secondProgrammingResult = performListCoursesRequest("Programming", programmingResult.nextPageToken)
+        val secondCookingResult = performListCoursesRequest("Cooking", cookingResult.nextPageToken)
+
+        assertCoursesListsEqual(programmingCourses, programmingResult.courses)
+        assertCoursesListsEqual(cookingCourses, cookingResult.courses)
+
+        assertNull(secondProgrammingResult.nextPageToken, "The nextPageToken should be null if there are no more pages")
+        assertNull(secondCookingResult.nextPageToken, "The nextPageToken should be null if there are no more pages")
+
+        assertCoursesListsEqual(emptyList(), secondProgrammingResult.courses)
+        assertCoursesListsEqual(emptyList(), secondCookingResult.courses)
     }
 
     fun assertCoursesListsEqual(expected: List<CourseDO>, actual: List<Course>) {
@@ -123,15 +147,24 @@ class CoursesControllerTest: BaseIntegrationTest() {
             .contentAsString
     }
 
-    private fun performListCoursesRequest(nextPageToken: String?): String {
-        return mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses")
-            .param("category", "Programming")
-            .param("maxCourses", "10")
-            .param("nextPageToken", nextPageToken))
-            .andExpect(status().isOk)
-            .andReturn()
-            .response
-            .contentAsString
+    private fun performListCoursesRequest(category: String): ListCoursesResponse {
+        return performListCoursesRequest(category, null)
+    }
+
+    private fun performListCoursesRequestWithPage(nextPageToken: String?): ListCoursesResponse {
+        return performListCoursesRequest("Programming", nextPageToken)
+    }
+
+    private fun performListCoursesRequest(category: String, nextPageToken: String?): ListCoursesResponse {
+        return OBJECT_MAPPER.readValue(
+            mockMvc.perform(MockMvcRequestBuilders.get("/v1/courses")
+                .param("category", category)
+                .param("maxCourses", "10")
+                .param("nextPageToken", nextPageToken))
+                .andExpect(status().isOk)
+                .andReturn()
+                .response
+                .contentAsString, ListCoursesResponse::class.java)
     }
 
     private fun assertCoursesEqual(expected: CourseDO, actual: Course) {
