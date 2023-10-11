@@ -11,7 +11,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 @Configuration
 open class JacksonConfig {
     @Bean
-    open fun objectMapper(attributeValueSerializer: StringAttributeValueSerializer, attributeValueDeserializer: StringAttributeValueDeserializer): Module {
+    open fun attributeValueSerializerModule(attributeValueSerializer: StringAttributeValueSerializer, attributeValueDeserializer: StringAttributeValueDeserializer): Module {
         val module = SimpleModule()
         module.addSerializer(AttributeValue::class.java, attributeValueSerializer)
         module.addDeserializer(AttributeValue::class.java, attributeValueDeserializer)
