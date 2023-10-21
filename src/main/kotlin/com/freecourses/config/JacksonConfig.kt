@@ -17,14 +17,4 @@ open class JacksonConfig {
         module.addDeserializer(AttributeValue::class.java, attributeValueDeserializer)
         return module
     }
-
-    @Bean
-    open fun attributeValueSerializer(): StringAttributeValueSerializer {
-        return StringAttributeValueSerializer()
-    }
-
-    @Bean
-    open fun attributeValueDeserializer(): StringAttributeValueDeserializer {
-        return StringAttributeValueDeserializer()
-    }
 }
