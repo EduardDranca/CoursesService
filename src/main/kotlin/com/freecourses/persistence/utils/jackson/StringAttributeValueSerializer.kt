@@ -3,8 +3,10 @@ package com.freecourses.persistence.utils.jackson
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 
+@Component
 class StringAttributeValueSerializer: StdSerializer<AttributeValue> {
     constructor(): this(null)
     constructor(clazz: Class<AttributeValue>?): super(clazz)
