@@ -25,7 +25,7 @@ open class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<
             .addPutItem(coursesTable, course)
         course.subcategories.forEach {
             val newCourse: CourseDO = course.copy(
-                partitionKey = "${course.category}#${it}"
+                sortKey = "${course.category}#${it}"
             )
             writeCoursesRequest.addPutItem(coursesTable, newCourse)
         }
@@ -47,7 +47,7 @@ open class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<
 
     fun getCourses(category: String, subcategory: String?, difficulty: CourseDifficulty?,
                    pageSize: Int, lastEvaluatedKey: Map<String, AttributeValue>?):  Page<CourseDO> {
-        val queryConditional = getQueryConditional(category, subcategory)
+        val queryConditional = getGSIQueryConditional(category, subcategory)
         val beginsWithFilterExpression = difficulty?.let {
             Expression.builder()
             .expression("begins_with(csGsiSk, $it#)")
@@ -71,7 +71,7 @@ open class CoursesRepository(@Autowired private val coursesTable: DynamoDbTable<
         }
     }
 
-    private fun getQueryConditional(category: String, subcategory: String?): QueryConditional {
+    private fun getGSIQueryConditional(category: String, subcategory: String?): QueryConditional {
         val partitionKeySuffix: String = if (subcategory == null) "" else "#$subcategory"
         return QueryConditional.keyEqualTo { it.partitionValue("$category${partitionKeySuffix}") }
     }

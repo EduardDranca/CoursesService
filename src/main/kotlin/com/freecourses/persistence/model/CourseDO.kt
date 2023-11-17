@@ -15,7 +15,7 @@ data class CourseDO(
     var id: UUID? = null,
     var category: String? = null,
     @get:DynamoDbSecondaryPartitionKey(indexNames = [INDEX_NAME])
-    var partitionKey: String? = null,
+    var sortKey: String? = null,
     var description: String? = null,
     var uri: URI? = null,
     var subcategories: List<String> = ArrayList<String>(),
@@ -27,7 +27,7 @@ data class CourseDO(
     var csGsiSk: String? = null
 
     init {
-        this.partitionKey = Optional.ofNullable(partitionKey).orElse(category)
+        this.sortKey = Optional.ofNullable(sortKey).orElse(category)
         this.csGsiSk = "${difficulty}#${id}"
     }
 

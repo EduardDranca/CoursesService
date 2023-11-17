@@ -2,7 +2,6 @@ package com.freecourses.config
 
 import com.freecourses.persistence.model.CourseDO
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -25,8 +24,8 @@ open class DynamoDbConfig {
     @Autowired
     lateinit var environment: Environment
 
-    @Value("\${dynamodb.local.endpoint}")
-    lateinit var dynamoDbLocalEndpoint: String
+//    @Value("\${dynamodb.local.endpoint}")
+    var dynamoDbLocalEndpoint: String = "https://localhost.localstack.cloud:4566";
 
     @Bean
     @Profile("!test")
@@ -55,7 +54,7 @@ open class DynamoDbConfig {
 
     @Bean
     open fun dynamoDBCoursesTable(amazonEnhancedDynamoDB: DynamoDbEnhancedClient): DynamoDbTable<CourseDO> {
-        val dynamoDBCoursesTable = amazonEnhancedDynamoDB.table("Courses", TableSchema.fromBean(CourseDO::class.java))
+        val dynamoDBCoursesTable = amazonEnhancedDynamoDB.table("courses-table", TableSchema.fromBean(CourseDO::class.java))
         if (environment.matchesProfiles("test")) {
             createTestTable(dynamoDBCoursesTable)
         }
@@ -79,6 +78,7 @@ open class DynamoDbConfig {
                     .build()
             )
         } catch (ex: ResourceInUseException) {
+            System.out.println("exception caught");
             // intentionally ignore this exception for local testing
         }
     }

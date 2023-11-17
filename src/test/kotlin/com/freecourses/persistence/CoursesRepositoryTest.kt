@@ -1,6 +1,6 @@
+package com.freecourses.persistence
 
 import com.freecourses.model.CourseDifficulty
-import com.freecourses.persistence.CoursesRepository
 import com.freecourses.persistence.model.CourseDO
 import io.mockk.*
 import org.junit.jupiter.api.Assertions
@@ -57,12 +57,12 @@ class CoursesRepositoryTest {
             .addPutItem(coursesTable, course)
             .addPutItem(
                 coursesTable, course.copy(
-                    partitionKey = "${course.category}#sub1"
+                    sortKey = "${course.category}#sub1"
                 )
             )
             .addPutItem(
                 coursesTable, course.copy(
-                    partitionKey = "${course.category}#sub2"
+                    sortKey = "${course.category}#sub2"
                 )
             )
             .build()

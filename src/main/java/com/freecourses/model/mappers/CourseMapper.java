@@ -40,7 +40,7 @@ public abstract class CourseMapper {
 
     public abstract Course toCourse(CourseDO courseDO);
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
-    @Mapping(target = "partitionKey", source = "category")
+    @Mapping(target = "sortKey", source = "category")
     public abstract CourseDO toCourseDO(CreateCourseRequest createCourseRequest);
     public abstract List<Course> toCourseList(List<CourseDO> courseDOList);
     @AfterMapping
