@@ -9,14 +9,7 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 open class AwsConfig {
 
     @Bean
-//    @Profile("!test")
     open fun awsCredentialsProvider(): AwsCredentialsProvider {
         return DefaultCredentialsProvider.create()
     }
-
-//    @Bean
-//    @Profile("test")
-//    open fun awsCredentialsProviderTest(): AwsCredentialsProvider {
-//        return StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
-//    }
 }
