@@ -15,7 +15,7 @@ import java.net.URI
 
 @Configuration
 open class DynamoDbConfig {
-    @Value("\${dynamodb.local.endpoint}")
+    @Value("\${dynamodb.endpoint}")
     lateinit var dynamoDbLocalEndpoint: String
 
     @Bean

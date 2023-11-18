@@ -91,6 +91,9 @@ sourceSets {
 		java {
 			srcDir "$buildDir/generated/main/java"
 		}
+		resources {
+			srcDir "$rootDir/src/resources"
+		}
 	}
 }
 
