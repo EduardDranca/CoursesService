@@ -10,11 +10,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.ResultMatcher
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable
 import java.util.*
 import java.util.stream.IntStream
 import kotlin.streams.toList
@@ -22,8 +20,6 @@ import kotlin.test.assertEquals
 
 
 class CoursesControllerTest: BaseIntegrationTest() {
-    @Autowired
-    lateinit var ddbTable: DynamoDbTable<CourseDO>
     companion object {
         private val OBJECT_MAPPER = ObjectMapper()
     }
@@ -36,7 +32,7 @@ class CoursesControllerTest: BaseIntegrationTest() {
     @Test
     fun Given_InvalidUUID_When_GetCourse_Then_ReturnBadRequest() {
         val result = performGetCourseAndAssertStatus("invalid", status().isBadRequest)
-        JSONAssert.assertEquals("{\"message\": \"Invalid UUID string: invalid\"}", result, JSONCompareMode.LENIENT)
+        JSONAssert.assertEquals("{\"message\": \"courseId can not be initialized using value: invalid\"}", result, JSONCompareMode.LENIENT)
     }
 
     @Test

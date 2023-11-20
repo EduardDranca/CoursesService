@@ -40,7 +40,7 @@ class CoursesServiceImpl(@Autowired private val coursesRepository: CoursesReposi
     }
 
     override fun getCourse(courseId: UUID): Course {
-        var course: Course? = null
+        var course: Course?
         try {
             course = courseMapper.toCourse(coursesRepository.getCourse(courseId))
         } catch (e: Exception) {

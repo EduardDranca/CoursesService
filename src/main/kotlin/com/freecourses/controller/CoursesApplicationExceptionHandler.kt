@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 @ControllerAdvice
@@ -26,6 +27,10 @@ class CoursesApplicationExceptionHandler : ResponseEntityExceptionHandler() {
     override fun handleTypeMismatch(
         ex: TypeMismatchException, headers: HttpHeaders, status: HttpStatus, request: WebRequest
     ): ResponseEntity<Any> {
+        if (ex is MethodArgumentTypeMismatchException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(InvalidInputError().message("${ex.name} can not be initialized using value: ${ex.value}"))
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(InvalidInputError().message(ex.cause!!.message))
     }

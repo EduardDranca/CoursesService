@@ -1,0 +1,2 @@
+dynamodb:
+    endpoint: https://localhost.localstack.cloud:4566
