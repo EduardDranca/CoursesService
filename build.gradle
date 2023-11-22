@@ -38,7 +38,7 @@ dependencies {
 	//aws
 	implementation platform('software.amazon.awssdk:bom:2.20.1')
 	implementation 'software.amazon.awssdk:dynamodb-enhanced'
-	runtimeOnly 'software.amazon.awssdk:sts'
+	implementation 'software.amazon.awssdk:sts'
 
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
@@ -83,7 +83,7 @@ tasks.named('compileTestKotlin') {
 }
 
 application {
-	mainClass = 'com.freecourses.FreeCoursesServiceApplication'
+	mainClass = 'com.freecourses.FreeCoursesServiceApplicationKt'
 }
 
 sourceSets {
