@@ -9,7 +9,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 @TestConfiguration
 open class AwsConfig {
 
-    @Bean
+    @Bean("service-execution-role", "ddb-access-role")
     open fun testAwsCredentialsProvider(): AwsCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create("accessKeyId", "accessKey"))
     }

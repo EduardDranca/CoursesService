@@ -1,2 +1,4 @@
 dynamodb:
     endpoint: https://localhost.localstack.cloud:4566
+sts:
+    endpoint: https://localhost.localstack.cloud:4566

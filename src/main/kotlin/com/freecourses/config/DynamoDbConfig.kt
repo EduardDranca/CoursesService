@@ -1,6 +1,7 @@
 package com.freecourses.config
 
 import com.freecourses.persistence.model.CourseDO
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,16 +20,16 @@ open class DynamoDbConfig {
     lateinit var dynamoDbLocalEndpoint: String
 
     @Bean
-    @Profile("!test")
-    open fun amazonDynamoDB(credentialsProvider: AwsCredentialsProvider): DynamoDbClient {
+    @Profile("!local & !test")
+    open fun amazonDynamoDB(@Qualifier("ddb-access-role") credentialsProvider: AwsCredentialsProvider): DynamoDbClient {
         return DynamoDbClient.builder()
             .credentialsProvider(credentialsProvider)
             .build()
     }
 
     @Bean
-    @Profile("test")
-    open fun amazonDynamoDBTest(credentialsProvider: AwsCredentialsProvider): DynamoDbClient {
+    @Profile("local", "test")
+    open fun amazonDynamoDbLocal(@Qualifier("ddb-access-role") credentialsProvider: AwsCredentialsProvider): DynamoDbClient {
         return DynamoDbClient.builder()
             .region(Region.EU_CENTRAL_1)
             .credentialsProvider(credentialsProvider)
