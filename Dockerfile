@@ -1,5 +1,5 @@
 FROM eclipse-temurin:11
-ADD build/libs/FreeCoursesService-0.0.1-SNAPSHOT.jar webserver.jar
-ADD native-libs/* native-libs/
+ARG SERVICE_VERSION
+ADD build/libs/FreeCoursesService-$SERVICE_VERSION.jar webserver.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "webserver.jar", "-Dnative.libs=/native-libs"]
+ENTRYPOINT ["java", "-jar", "webserver.jar"]
