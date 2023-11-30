@@ -1,0 +1,12 @@
+openapi: '3.0.2'
+info:
+  title: Free Courses Service API
+  version: '1.0'
+servers:
+  - url: http://localhost:8080/v1/
+
+paths:
+  /courses:
+    $ref: "courses.yml#/paths/~1courses"
+  /courses/{courseId}:
+    $ref: "courses.yml#/paths/~1courses~1{courseId}"
