@@ -10,3 +10,7 @@ paths:
     $ref: "courses.yml#/paths/~1courses"
   /courses/{courseId}:
     $ref: "courses.yml#/paths/~1courses~1{courseId}"
+components:
+  schemas:
+    CourseSource:
+      $ref: "courses.yml#/components/schemas/CourseSource"
