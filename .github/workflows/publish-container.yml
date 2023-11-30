@@ -65,6 +65,18 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build --build-arg SERVICE_VERSION=${{ steps.full-version.outputs.version }} -t courses-service:${{ steps.full-version.outputs.version }} .
-          docker tag courses-service:${{ steps.full-version.outputs.version }} ${{ vars.REPOSITORY_ENDPOINT }}/courses-service:${{ steps.full-version.outputs.version }}
+
+      - name: Login to AWS ECR
+        run:
           docker login -u AWS -p ${{ SECRETS.ECR_PASSWORD }} ${{ vars.REPOSITORY_ENDPOINT }}/courses-service
+
+      - name: Publish Image to AWS ECR
+        run: |
+          docker tag courses-service:${{ steps.full-version.outputs.version }} ${{ vars.REPOSITORY_ENDPOINT }}/courses-service:${{ steps.full-version.outputs.version }}
           docker push ${{ vars.REPOSITORY_ENDPOINT }}/courses-service:${{ steps.full-version.outputs.version }}
+
+      - name: Publish Non-Production Image
+        if: github.ref != 'refs/heads/main'
+        run: |
+          docker tag ${{ vars.REPOSITORY_ENDPOINT }}/courses-service:${{ steps.full-version.outputs.version }} ${{ vars.REPOSITORY_ENDPOINT }}/courses-service:non-production
+          docker push ${{ vars.REPOSITORY_ENDPOINT }}/courses-service:non-production

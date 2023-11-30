@@ -1,1 +1,0 @@
-act -W ./.github/workflows/publish-container.yml --var AWS_ENDPOINT="http://localhost:4566" --var REPOSITORY_ENDPOINT="localhost.localstack.cloud:4510" -s ECR_PASSWORD="000000000000-auth-token" --var AWS_REGION="eu-central-1" -s AWS_ACCESS_KEY_ID=test -s AWS_SECRET_ACCESS_KEY=test
