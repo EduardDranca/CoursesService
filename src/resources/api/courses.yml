@@ -1,10 +1,3 @@
-openapi: '3.0.2'
-info:
-  title: Free Courses Service API
-  version: '1.0'
-servers:
-  - url: http://localhost:8080/v1/
-
 paths:
   /courses:
     get:
@@ -66,11 +59,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Course'
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvalidInputError'
+          $ref: '#/components/responses/BadRequest'
         '409':
           description: The course already exists
           content:
@@ -87,7 +76,7 @@ paths:
             $ref: '#/components/schemas/CourseId'
           required: true
           description: Unique id of the course to get
-      responses:  
+      responses:
         '200':
           description: Course was returned successfully
           content:
@@ -95,18 +84,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Course'
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvalidInputError'
+          $ref: '#/components/responses/BadRequest'
         '404':
           description: Course could not be found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseNotFoundError'         
+                $ref: '#/components/schemas/CourseNotFoundError'
 components:
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidInputError'
   schemas:
     Course:
       title: Course

@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.13'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-	id 'org.openapi.generator' version '6.6.0'
+	id 'org.openapi.generator' version '7.0.1'
 	id 'application'
 	id 'org.jetbrains.kotlin.jvm' version '1.9.0'
 }
@@ -48,7 +48,7 @@ tasks.named('test') {
 }
 
 tasks.named('openApiGenerate') {
-	inputSpec.set("$rootDir/src/resources/api.yml")
+	inputSpec.set("$rootDir/src/resources/api/api.yml")
 	outputDir.set("$rootDir/build/generated")
 	globalProperties.set([
 		models: '',
@@ -59,7 +59,7 @@ tasks.named('openApiGenerate') {
 		interfaceOnly: "true",
 		skipDefaultInterface: "true"
 	])
-	templateDir.set("$rootDir/src/resources/template")
+	templateDir.set("$rootDir/src/resources/api/template")
 	modelPackage.set('com.freecourses.model')
 	apiPackage.set('com.freecourses.api')
 	generatorName.set('spring')
