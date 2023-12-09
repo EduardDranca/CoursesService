@@ -38,7 +38,7 @@ jobs:
       - name: Fetch Latest Image Tag from AWS ECR
         id: fetch-latest-tag
         run: |
-          echo "name=latest_tag::$(aws ecr describe-images --repository-name courses-service --region ${{ vars.AWS_REGION }} --endpoint-url=${{ env.AWS_ENDPOINT_URL }} --query 'max_by(imageDetails, &imagePushedAt) | imageTags | [0]' | awk -F'[-.]' '{print $3}')" >> $GITHUB_ENV
+          echo "name=latest_tag::$(aws ecr describe-images --repository-name courses-service --region ${{ vars.AWS_REGION }} --endpoint-url=${{ env.AWS_ENDPOINT_URL }} --query 'max_by(imageDetails, &imagePushedAt) | imageTags | [0]' | awk -F'[-.]' '{print $3}')" >> $GITHUB_OUTPUT
 
       - name: Get Project Version
         id: version
@@ -49,15 +49,15 @@ jobs:
 
       - name: Set Patch Version
         id: set-patch
-        run: echo "name=patch::$((${{ steps.fetch-latest-tag.outputs.latest_tag }} + 1))" >> $GITHUB_ENV
+        run: echo "name=patch::$((${{ steps.fetch-latest-tag.outputs.latest_tag }} + 1))" >> $GITHUB_OUTPUT
 
       - name: Get Shortened Git Commit
         id: commit
-        run: echo "name=commit::$(git log --pretty=format:'%h' -n 1)" >> $GITHUB_ENV
+        run: echo "name=commit::$(git log --pretty=format:'%h' -n 1)" >> $GITHUB_OUTPUT
 
       - name: Construct Service Version
         id: full-version
-        run: echo "name=version::${{ steps.version.outputs.version }}.${{ steps.set-patch.outputs.patch }}-${{ steps.commit.outputs.commit }}" >> $GITHUB_ENV
+        run: echo "name=version::${{ steps.version.outputs.version }}.${{ steps.set-patch.outputs.patch }}-${{ steps.commit.outputs.commit }}" >> $GITHUB_OUTPUT
 
       - name: Build and Package Spring Microservice
         run: ./gradlew build -Pversion=${{ steps.full-version.outputs.version }}
