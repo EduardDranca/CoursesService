@@ -27,18 +27,21 @@ jobs:
       - name: Install AWS CLI
         uses: unfor19/install-aws-cli-action@v1
         with:
-          arch: amd64
-
-      - name: Set Custom Endpoint
-        if: vars.AWS_ENDPOINT != ''
-        run: echo "AWS_ENDPOINT_URL=${{ vars.AWS_ENDPOINT }}" >> $GITHUB_ENV
+          arch: amd64s
 
       # This will only work for a single ECR region.
       # For now, I will keep it simple and use a single "main" region.
       - name: Fetch Latest Image Tag from AWS ECR
         id: fetch-latest-tag
+        if: vars.AWS_ENDPOINT == ''
         run: |
-          echo "latest_tag=$(aws ecr describe-images --repository-name courses-service --region ${{ vars.AWS_REGION }} --endpoint-url=${{ env.AWS_ENDPOINT_URL }} --query 'max_by(imageDetails, &imagePushedAt) | imageTags | [0]' | awk -F'[-.]' '{print $3}')" >> $GITHUB_OUTPUT
+          echo "latest_tag=$(aws ecr describe-images --repository-name courses-service --region ${{ vars.AWS_REGION }} --query 'max_by(imageDetails, &imagePushedAt) | imageTags | [0]' | awk -F'[-.]' '{print $3}')" >> $GITHUB_OUTPUT
+
+      - name: Fetch Latest Image Tag custom Endpoint
+        id: fetch-latest-tag
+        if: vars.AWS_ENDPOINT != ''
+        run: |
+          echo "latest_tag=$(aws ecr describe-images --repository-name courses-service --region ${{ vars.AWS_REGION }} --endpoint-url=${{ vars.AWS_ENDPOINT }} --query 'max_by(imageDetails, &imagePushedAt) | imageTags | [0]' | awk -F'[-.]' '{print $3}')" >> $GITHUB_OUTPUT
 
       - name: Get Project Version
         id: version
