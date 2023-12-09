@@ -27,7 +27,7 @@ jobs:
       - name: Install AWS CLI
         uses: unfor19/install-aws-cli-action@v1
         with:
-          arch: amd64s
+          arch: amd64
 
       # This will only work for a single ECR region.
       # For now, I will keep it simple and use a single "main" region.
