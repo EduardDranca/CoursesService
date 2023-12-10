@@ -17,7 +17,7 @@ import java.util.function.Supplier
 open class AwsConfig {
     @Value("\${dynamodb.role-arn}") lateinit var ddbRoleArn: String
     @Value("\${dynamodb.session-name:ddb-session}") lateinit var sessionName: String
-    @Value("\${sts.endpoint}") lateinit var stsEndpiont: String
+    @Value("\${sts.endpoint:}") lateinit var stsEndpiont: String
 
     @Bean("service-execution-role")
     open fun awsCredentialsProvider(): AwsCredentialsProvider {
