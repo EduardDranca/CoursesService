@@ -1,5 +1,5 @@
 FROM public.ecr.aws/amazonlinux/amazonlinux:latest
-RUN apt-get install openjdk-11-jdk
+RUN yum install -y java-11-amazon-corretto-devel
 ARG SERVICE_VERSION
 ADD build/libs/FreeCoursesService-$SERVICE_VERSION.jar webserver.jar
 EXPOSE 8080
